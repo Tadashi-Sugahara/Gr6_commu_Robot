@@ -77,6 +77,8 @@ void wakeupMusic() {
   playNote(NOTE_G5, EIGHTH, true, false);
   playNote(NOTE_E5, SIXTEENTH, false);
   playNote(NOTE_G5, HALF, false);
+
+  return;
 }
 
 long SS_sens1(){
@@ -107,18 +109,18 @@ void moveFoward(int speed) {
   long distance;
 
   analogWrite(motorPin9, 0);
-  analogWrite(motorPin11, 0);
+  analogWrite(motorPin10, 0);
     // 超音波センサで距離を測定
   distance = SS_sens1();
 
-  while (distance < limit_dist ){
+  while (distance > limit_dist ){
     analogWrite(motorPin8, speed);
-    analogWrite(motorPin10, speed);
+    analogWrite(motorPin11, speed);
     distance = SS_sens1();
   }
   analogWrite(motorPin8, 0);
-  analogWrite(motorPin10, 0);
-
+  analogWrite(motorPin11, 0);
+  return;
 }
 
 // 後退
@@ -126,17 +128,19 @@ void moveBackward(int speed) {
   long distance;
 
   analogWrite(motorPin8, 0);
-  analogWrite(motorPin10, 0);
+  analogWrite(motorPin11, 0);
     // 超音波センサで距離を測定
   distance = SS_sens1();
 
-  while (distance < limit_dist ){
+  while (distance > limit_dist ){
     analogWrite(motorPin9, speed);
-    analogWrite(motorPin11, speed);
+    analogWrite(motorPin10, speed);
     distance = SS_sens1();
   }
   analogWrite(motorPin9, 0);
-  analogWrite(motorPin11, 0);
+  analogWrite(motorPin10, 0);
+
+  return;
 }
 
 /* 首振り
@@ -168,16 +172,25 @@ void setup() {
 void loop() {
   char key = 'f'; // シリアル通信の受信文字
 
-  // シリアル通信の文字列チェック
+  /* シリアル通信の文字列チェック
   while(key != '0'){
     if ( Serial.available()){
       key = Serial.read();
     }
   }
+  */
 
   // 初期化
   wakeupMusic();
 
- 
+  while(1){
+    delay(2000);
+
+    moveFoward(100);
+
+    delay(2000);
+
+    moveBackward(100);
+  }
 
 }
