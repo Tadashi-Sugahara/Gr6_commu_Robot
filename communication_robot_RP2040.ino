@@ -101,6 +101,10 @@ long SS_sens1(){
   // 距離を計算 (音速 = 343m/s、音速の半分を使用して計算)
   distance = (duration / 2) / 29.1;
 
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println("cm");
+
   return distance;
 }
 
@@ -112,11 +116,13 @@ void moveFoward(int speed) {
   analogWrite(motorPin10, 0);
     // 超音波センサで距離を測定
   distance = SS_sens1();
+  delay(100);
 
   while (distance > limit_dist ){
     analogWrite(motorPin8, speed);
     analogWrite(motorPin11, speed);
     distance = SS_sens1();
+    delay(100);
   }
   analogWrite(motorPin8, 0);
   analogWrite(motorPin11, 0);
@@ -131,11 +137,13 @@ void moveBackward(int speed) {
   analogWrite(motorPin11, 0);
     // 超音波センサで距離を測定
   distance = SS_sens1();
+  delay(100);
 
   while (distance > limit_dist ){
     analogWrite(motorPin9, speed);
     analogWrite(motorPin10, speed);
     distance = SS_sens1();
+    delay(100);
   }
   analogWrite(motorPin9, 0);
   analogWrite(motorPin10, 0);
