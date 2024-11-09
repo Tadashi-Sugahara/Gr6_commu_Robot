@@ -119,7 +119,7 @@ void moveFoward(int speed) {
   delay(100);
 
   while (distance > limit_dist ){
-    analogWrite(motorPin8, speed);
+    analogWrite(motorPin8, speed-10);
     analogWrite(motorPin11, speed);
     distance = SS_sens1();
     delay(100);
@@ -135,7 +135,9 @@ void moveBackward(int speed) {
 
   analogWrite(motorPin8, 0);
   analogWrite(motorPin11, 0);
-    // 超音波センサで距離を測定
+  
+  /*
+  // 超音波センサで距離を測定
   distance = SS_sens1();
   delay(100);
 
@@ -145,6 +147,12 @@ void moveBackward(int speed) {
     distance = SS_sens1();
     delay(100);
   }
+
+  */
+  analogWrite(motorPin9, speed);
+  analogWrite(motorPin10, speed);
+  delay(3000);
+  
   analogWrite(motorPin9, 0);
   analogWrite(motorPin10, 0);
 
@@ -194,7 +202,7 @@ void loop() {
   while(1){
     delay(2000);
 
-    moveFoward(100);
+    moveFoward(150);
 
     delay(2000);
 
