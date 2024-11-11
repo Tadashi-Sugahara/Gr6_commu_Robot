@@ -1,0 +1,10 @@
+openai
+python-dotenv
+requests
+dotenv
+opencv-python
+SpeechRecognition
+pyaudio
+gtts
+pydub
+pyserial
