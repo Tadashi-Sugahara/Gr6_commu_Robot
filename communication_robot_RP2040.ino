@@ -1,11 +1,13 @@
 #include <Arduino.h>
+#include <Servo.h>
+
 
 #ifndef PIN_BUZZER
 #define PIN_BUZZER    A0
 #endif
 
 // 超音波センサのピン設定
-const int ultrasonicPin = 1; 
+const int ultrasonicPin = 3; 
 // ブザーのピン設定
 uint8_t const pin_buzzer = PIN_BUZZER;
 // モーター端子定義
@@ -17,6 +19,16 @@ const int motorPin11 = 11;
 // 超音波センサで測定する障害物の距離限界 (cm)
 const long limit_dist = 15;
 
+// ユーザースイッチの設定
+const int switchPin20 = 20; // GP20
+const int switchPin21 = 21; // GP21
+int switchState20 = 0;      // スイッチの状態を保存する変数
+int switchState21 = 0;
+int flag0 = 0;
+int flag1 = 0;
+
+// サーボモータの設定
+Servo servo;
 
 #define NOTE_C4  262
 #define NOTE_CS4 277
@@ -101,10 +113,11 @@ long SS_sens1(){
   // 距離を計算 (音速 = 343m/s、音速の半分を使用して計算)
   distance = (duration / 2) / 29.1;
 
+  /*
   Serial.print("Distance: ");
   Serial.print(distance);
   Serial.println("cm");
-
+*/
   return distance;
 }
 
@@ -114,16 +127,24 @@ void moveFoward(int speed) {
 
   analogWrite(motorPin9, 0);
   analogWrite(motorPin10, 0);
-    // 超音波センサで距離を測定
+
+/*
+  analogWrite(motorPin8, speed-10);
+  analogWrite(motorPin11, speed);
+*/
+  delay(1500);
+  
+  // 超音波センサで距離を測定
   distance = SS_sens1();
   delay(100);
 
   while (distance > limit_dist ){
-    analogWrite(motorPin8, speed-10);
+    analogWrite(motorPin8, speed);
     analogWrite(motorPin11, speed);
     distance = SS_sens1();
     delay(100);
   }
+
   analogWrite(motorPin8, 0);
   analogWrite(motorPin11, 0);
   return;
@@ -159,12 +180,21 @@ void moveBackward(int speed) {
   return;
 }
 
-/* 首振り
+// 首振り
 void shakingHead() {
+  int servoPos = 0;
+  
+  for(servoPos = 0; servoPos <=180; servoPos +=30){
+    servo.write(servoPos);
+    delay(100);
+  }
 
-
+  for(servoPos = 180; servoPos >=0; servoPos -=30){
+    servo.write(servoPos);
+    delay(100);
+  }
 }
-*/
+
 
 void setup() {
   Serial.begin(9600); // シリアル通信を9600bpsで開始
@@ -183,30 +213,74 @@ void setup() {
   analogWrite(motorPin9, 0);
   analogWrite(motorPin10, 0);
   analogWrite(motorPin11, 0);
+
+  pinMode(switchPin20, INPUT);
+  pinMode(switchPin21, INPUT);
+
+  servo.attach(12); // GPIO12
 }
 
 void loop() {
   char key = 'f'; // シリアル通信の受信文字
 
-  /* シリアル通信の文字列チェック
+  // シリアル通信の文字列チェック
   while(key != '0'){
     if ( Serial.available()){
       key = Serial.read();
     }
   }
-  */
-
+  
   // 初期化
   wakeupMusic();
 
+  
+  moveFoward(150);
+
+  Serial.print('9');
+
   while(1){
-    delay(2000);
 
-    moveFoward(150);
+    // スイッチの状態を読み取る
+    switchState20 = digitalRead(switchPin20);
+    switchState21 = digitalRead(switchPin21);
 
-    delay(2000);
+    
 
-    moveBackward(100);
+    // スイッチが押されたとき
+    if (switchState20 == LOW) {
+      flag0 = flag0 + 1;
+        if (flag0 == 1) {
+          Serial.print('7');
+        }
+
+    }
+    if (switchState21 == LOW) {
+      flag1 = flag1 + 1;
+      if (flag1 == 1) {
+        Serial.print('8');
+      }
+    }
+  
+    if (switchState20 == HIGH) {
+      flag0 = 0;
+    }
+    if (switchState21 == HIGH) {
+      flag1 = 0;
+    }
+
+    if ( Serial.available()){
+      key = Serial.read();
+      if (key == '2'){
+        shakingHead();
+
+        while (key != '3'){
+          if(Serial.available()){
+            key = Serial.read();
+          }
+          shakingHead();
+        }
+      }
+    }
   }
 
 }
